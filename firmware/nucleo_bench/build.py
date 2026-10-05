@@ -22,6 +22,7 @@ SOURCES = [
     HERE / "board.c",
     HERE / "system_stm32f4xx.c",
     ROOT / "src" / "alloc.c",
+    ROOT / "src" / "alloc_v2.c",
     HERE / "startup_stm32f446retx.s",
 ]
 

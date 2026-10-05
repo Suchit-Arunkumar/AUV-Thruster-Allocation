@@ -2,10 +2,12 @@
  * main.c - cycle cost of src/alloc.c on the NUCLEO-F446RE (Cortex-M4F,
  * 180 MHz, -O2, no interrupts enabled).
  *
- * 1000 wrenches from a seeded xorshift32 are pushed through the pipeline;
- * each stage is timed with DWT->CYCCNT. Every output byte is folded into an
- * FNV-1a hash that read_bench.py recomputes with the NumPy reference, so the
- * same run shows the on-target results are correct.
+ * 1000 wrenches from a seeded xorshift32 are pushed through the flown
+ * pipeline; each stage is timed with DWT->CYCCNT. The same wrenches then go
+ * through the v2 and v2p allocators (NOT FLOWN), timed the same way. Every
+ * output byte is folded into an FNV-1a hash per allocator that
+ * read_bench.py recomputes with the NumPy reference, so the same run shows
+ * the on-target results are correct.
  *
  * Output on USART2 (ST-Link VCP, 115200 8N1), repeated every ~2 s:
  *   BEGIN run=<n>
@@ -14,12 +16,14 @@
  */
 #include "board.h"
 #include "alloc.h"
+#include "alloc_v2.h"
 
 #define N_WRENCH 1000u
 #define SEED     2026u
 #define DT       0.02f
 
 typedef struct { uint32_t min, max, sum; } stat_t;
+typedef uint8_t (*alloc_fn)(const float *, float *);
 
 static float W[N_WRENCH][ALLOC_N_DOF];
 
@@ -95,6 +99,25 @@ static void put_stat(const char *name, const stat_t *s)
 
 #define BARRIER() __asm volatile("" ::: "memory")
 
+/* Time one wrench -> thrust allocator over all wrenches; hash its output. */
+static void time_alloc(alloc_fn fn, stat_t *st, uint32_t *hash, uint32_t *n_scaled)
+{
+    stat_reset(st);
+    *hash = 2166136261u;
+    *n_scaled = 0;
+    for (uint32_t i = 0; i < N_WRENCH; i++) {
+        float t[ALLOC_N_THR];
+        uint32_t c0 = board_cycles(); BARRIER();
+        uint32_t c1 = board_cycles(); BARRIER();
+        uint8_t flags = fn(W[i], t);
+        BARRIER(); uint32_t c2 = board_cycles();
+        stat_add(st, c2 - c1 - (c1 - c0));
+        if (flags) (*n_scaled)++;
+        *hash = fnv1a(*hash, t, sizeof t);
+        *hash = fnv1a(*hash, &flags, 1);
+    }
+}
+
 int main(void)
 {
     board_clock_180mhz();
@@ -149,6 +172,17 @@ int main(void)
         put_stat("total", &st_total);
         board_puts("saturated "); put_u32(n_sat); board_puts("\r\n");
         board_puts("hash "); put_hex(hash); board_puts("\r\n");
+
+        stat_t st_v2;
+        uint32_t h2, n2;
+        time_alloc(alloc_v2_wrench_to_thrust, &st_v2, &h2, &n2);
+        put_stat("v2_wrench_to_thrust", &st_v2);
+        board_puts("v2_scaled "); put_u32(n2); board_puts("\r\n");
+        board_puts("v2_hash "); put_hex(h2); board_puts("\r\n");
+        time_alloc(alloc_v2p_wrench_to_thrust, &st_v2, &h2, &n2);
+        put_stat("v2p_wrench_to_thrust", &st_v2);
+        board_puts("v2p_scaled "); put_u32(n2); board_puts("\r\n");
+        board_puts("v2p_hash "); put_hex(h2); board_puts("\r\n");
         board_puts("END\r\n");
 
         board_delay_cycles(2u * BOARD_SYSCLK_HZ);

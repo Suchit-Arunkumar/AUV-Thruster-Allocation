@@ -5,7 +5,8 @@
 
 Waits for the second complete BEGIN..END block (the first run includes cold
 flash-cache effects), prints it, converts cycles to microseconds at the
-reported SYSCLK, and recomputes the output hash with the NumPy reference.
+reported SYSCLK, and recomputes the three output hashes (flown, v2, v2p)
+with the NumPy reference.
 --save writes results/nucleo_bench.json.
 """
 
@@ -50,15 +51,24 @@ def wrenches() -> np.ndarray:
     return w
 
 
-def expected_hash() -> int:
-    rec = compare_c.reference_records(wrenches(), DT)
+def _fnv(chunks) -> str:
     h = 2166136261
-    for row in rec:
-        for b in (row["thrust"].tobytes(), row["target"].tobytes(),
-                  row["slewed"].tobytes(), row["flags"].tobytes()):
-            for x in b:
-                h = ((h ^ x) * 16777619) & 0xFFFFFFFF
-    return h
+    for b in chunks:
+        for x in b:
+            h = ((h ^ x) * 16777619) & 0xFFFFFFFF
+    return f"0x{h:08x}"
+
+
+def expected_hashes() -> dict:
+    """FNV-1a over every output, in the order main.c hashes them."""
+    rec = compare_c.reference_records(wrenches(), DT)
+    out = {"hash": _fnv(b for row in rec for b in (
+        row["thrust"].tobytes(), row["target"].tobytes(),
+        row["slewed"].tobytes(), row["flags"].tobytes()))}
+    for v in ("v2", "v2p"):
+        out[f"{v}_hash"] = _fnv(b for row in rec for b in (
+            row[f"thrust_{v}"].tobytes(), row[f"flags_{v}"].tobytes()))
+    return out
 
 
 def parse(text: str) -> dict | None:
@@ -77,7 +87,10 @@ def parse(text: str) -> dict | None:
     hz = int(kv["sysclk_hz"])
     n = int(kv["n"])
     out = {"run": kv["run"], "sysclk_hz": hz, "n_calls": n, "seed": int(kv["seed"]),
-           "saturated_calls": int(kv["saturated"]), "hash": kv["hash"], "stages": {}}
+           "saturated_calls": int(kv["saturated"]),
+           "v2_scaled_calls": int(kv["v2_scaled"]), "v2p_scaled_calls": int(kv["v2p_scaled"]),
+           "hash": kv["hash"], "v2_hash": kv["v2_hash"], "v2p_hash": kv["v2p_hash"],
+           "stages": {}}
     for name, s in stages.items():
         mean = s["sum"] / n
         out["stages"][name] = {
@@ -114,14 +127,14 @@ def main() -> int:
     if r is None:
         print("no complete warm run found; raw output:\n" + text)
         return 1
-    exp = f"0x{expected_hash():08x}"
-    r["expected_hash"] = exp
-    r["output_matches_reference"] = r["hash"] == exp
+    exp = expected_hashes()
+    r["expected"] = exp
+    r["output_matches_reference"] = {k: r[k] == v for k, v in exp.items()}
     print(json.dumps(r, indent=2))
     if a.save:
         (ROOT / "results" / "nucleo_bench.json").write_text(json.dumps(r, indent=2) + "\n", newline="\n")
         print("wrote results/nucleo_bench.json")
-    return 0 if r["output_matches_reference"] else 2
+    return 0 if all(r["output_matches_reference"].values()) else 2
 
 
 if __name__ == "__main__":
