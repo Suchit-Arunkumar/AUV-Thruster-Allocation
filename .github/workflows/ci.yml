@@ -26,3 +26,12 @@ jobs:
         run: ALLOC_REQUIRE_C=1 python -m pytest -v
       - name: C vs NumPy, 10,000 wrenches
         run: python python/compare_c.py --out /tmp/c_vs_numpy.json
+
+  nucleo-bench-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install arm-none-eabi-gcc
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi
+      - name: Build NUCLEO-F446RE bench (-O2, -Werror)
+        run: python3 firmware/nucleo_bench/build.py
