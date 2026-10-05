@@ -1,15 +1,17 @@
 /*
  * alloc_vectors.c - runs the C pipeline over a file of wrenches for the
- * NumPy comparison (tests/test_c_vs_numpy.py).
+ * NumPy comparison (tests/test_c.py).
  *
  *   alloc_vectors <in.bin> <out.bin> <dt>
  *
  * in.bin : N x 6 float32 wrenches
- * out.bin: per wrench, 8 float32 thrust, 8 int16 PWM target, 8 int16 slewed
- *          PWM, 1 uint8 flags (57 bytes). The slew state starts at neutral
- *          and carries across rows, one tick of dt per row.
+ * out.bin: per wrench, flown pipeline: 8 float32 thrust, 8 int16 PWM target,
+ *          8 int16 slewed PWM, 1 uint8 flags; then v2 and v2p: 8 float32
+ *          thrust + 1 uint8 flags each (115 bytes). The slew state starts at
+ *          neutral and carries across rows, one tick of dt per row.
  */
 #include "alloc.h"
+#include "alloc_v2.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,6 +41,14 @@ int main(int argc, char **argv)
         fwrite(target, sizeof target, 1, out);
         fwrite(s.pwm_us, sizeof s.pwm_us, 1, out);
         fwrite(&flags, 1, 1, out);
+
+        float t2[ALLOC_N_THR];
+        uint8_t f2 = alloc_v2_wrench_to_thrust(w, t2);
+        fwrite(t2, sizeof t2, 1, out);
+        fwrite(&f2, 1, 1, out);
+        f2 = alloc_v2p_wrench_to_thrust(w, t2);
+        fwrite(t2, sizeof t2, 1, out);
+        fwrite(&f2, 1, 1, out);
         n++;
     }
     fclose(in);

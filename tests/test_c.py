@@ -11,6 +11,7 @@ import subprocess
 import pytest
 
 import compare_c
+import metrics
 
 BUILD = compare_c.ROOT / os.environ.get("ALLOC_BUILD_DIR", "build")
 
@@ -40,3 +41,17 @@ def test_c_matches_numpy_bit_for_bit():
     assert r["pwm_target_max_abs_diff_us"] == 0
     assert r["pwm_slewed_max_abs_diff_us"] == 0
     assert r["flags_mismatches"] == 0
+
+
+def test_c_v2_matches_numpy_and_keeps_direction():
+    _binary("alloc_vectors")
+    binary = compare_c.find_binary(BUILD)
+    r = compare_c.compare(binary, n=10_000, seed=2026)
+    for v in ("v2", "v2p"):
+        assert r["v2"][v]["thrust_bit_identical"], v
+        assert r["v2"][v]["flags_mismatches"] == 0, v
+    w = compare_c.wrenches(10_000, 2026)
+    c = compare_c.run_c(binary, w)
+    sc = c["flags_v2"] == 0x08
+    assert sc.sum() > 1000
+    assert metrics.angle_deg(w[sc], c["thrust_v2"][sc]).max() <= 1e-4

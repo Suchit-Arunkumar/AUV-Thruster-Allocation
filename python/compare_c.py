@@ -21,7 +21,9 @@ import reference as ref
 ROOT = Path(__file__).resolve().parents[1]
 DT = 0.02
 RECORD = np.dtype([("thrust", "<f4", 8), ("target", "<i2", 8),
-                   ("slewed", "<i2", 8), ("flags", "u1")])
+                   ("slewed", "<i2", 8), ("flags", "u1"),
+                   ("thrust_v2", "<f4", 8), ("flags_v2", "u1"),
+                   ("thrust_v2p", "<f4", 8), ("flags_v2p", "u1")])
 
 
 def find_binary(build: Path) -> Path | None:
@@ -54,6 +56,8 @@ def reference_records(w: np.ndarray, dt: float = DT) -> np.ndarray:
         cur = ref.slew_step(cur, target[i], dt)
         out["slewed"][i] = cur
     out["thrust"], out["target"], out["flags"] = t, target, flags
+    out["thrust_v2"], out["flags_v2"] = ref.v2_wrench_to_thrust(w)
+    out["thrust_v2p"], out["flags_v2p"] = ref.v2p_wrench_to_thrust(w)
     return out
 
 
@@ -83,6 +87,12 @@ def compare(binary: Path, n: int = 10_000, seed: int = 2026) -> dict:
         "pwm_slewed_max_abs_diff_us": int(np.max(np.abs(
             c["slewed"].astype(int) - py["slewed"].astype(int)))),
         "flags_mismatches": int(np.sum(c["flags"] != py["flags"])),
+        "v2": {v: {
+            "n_scaled": int(np.sum(py[f"flags_{v}"] != 0)),
+            "thrust_bit_identical": bool(np.array_equal(
+                c[f"thrust_{v}"].view(np.uint32), py[f"thrust_{v}"].view(np.uint32))),
+            "flags_mismatches": int(np.sum(c[f"flags_{v}"] != py[f"flags_{v}"])),
+        } for v in ("v2", "v2p")},
     }
 
 

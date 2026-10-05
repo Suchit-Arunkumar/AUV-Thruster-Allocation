@@ -3,6 +3,7 @@
  * and exits non-zero on any failure.
  */
 #include "alloc.h"
+#include "alloc_v2.h"
 #include "alloc_matrix.h"
 
 #include <math.h>
@@ -179,6 +180,76 @@ static void test_slew(void)
     CHECK(all_pwm(s.pwm_us, ALLOC_PWM_NEUTRAL));
 }
 
+/* ---- v2 (not flown) ---------------------------------------------------- */
+
+/* Achieved wrench A*T, in double for the checks. */
+static void wrench_of(const float t[8], double out[6])
+{
+    for (int r = 0; r < 6; r++) {
+        out[r] = 0.0;
+        for (int i = 0; i < 8; i++) out[r] += (double)ALLOC_A[r][i] * (double)t[i];
+    }
+}
+
+static void test_v2(void)
+{
+    float t[8];
+    double a[6];
+
+    float z[6] = {0};
+    CHECK(alloc_v2_wrench_to_thrust(z, t) == 0);
+    CHECK(max_abs(t, 0, 8) == 0.0f);
+
+    /* Unsaturated: full B+ reproduces the wrench, no cross-coupling. */
+    float w[6] = {0.3f, -0.2f, 0.4f, 0.05f, -0.05f, 0.08f};
+    CHECK(alloc_v2_wrench_to_thrust(w, t) == 0);
+    wrench_of(t, a);
+    for (int r = 0; r < 6; r++) CHECK(fabs(a[r] - (double)w[r]) < 1e-5);
+
+    /* Saturated: one scale for all eight, so A*T = w / m exactly in
+     * direction, and the largest thruster sits at full scale. */
+    float big[6] = {3.0f, -2.0f, 4.0f, 0.5f, -0.4f, 0.6f};
+    CHECK(alloc_v2_wrench_to_thrust(big, t) == ALLOC_V2_SCALED);
+    CHECK(fabsf(max_abs(t, 0, 8) - 1.0f) < 1e-6f);
+    wrench_of(t, a);
+    double k = a[0] / (double)big[0];
+    for (int r = 0; r < 6; r++) CHECK(fabs(a[r] - k * (double)big[r]) < 1e-5);
+
+    float nan_w[6] = {0.1f, NAN, 0, 0, 0, 0};
+    CHECK(alloc_v2_wrench_to_thrust(nan_w, t) == ALLOC_REJECTED);
+    CHECK(max_abs(t, 0, 8) == 0.0f);
+    CHECK(alloc_v2p_wrench_to_thrust(nan_w, t) == ALLOC_REJECTED);
+}
+
+static void test_v2p(void)
+{
+    float t[8];
+    double a[6];
+
+    /* Surge/sway/yaw scaled to fit around an unsaturated attitude command,
+     * which is delivered in full. */
+    float w[6] = {3.0f, 0.0f, 0.5f, 0.05f, 0.0f, 0.3f};
+    CHECK(alloc_v2p_wrench_to_thrust(w, t) == ALLOC_V2_SECONDARY);
+    CHECK(max_abs(t, 0, 8) <= 1.0f);
+    wrench_of(t, a);
+    for (int r = 2; r < 5; r++) CHECK(fabs(a[r] - (double)w[r]) < 1e-5);
+    CHECK(a[0] < (double)w[0]);
+
+    /* Attitude alone saturates: it is scaled, surge/sway/yaw dropped. */
+    float h[6] = {1.0f, 0.0f, 10.0f, 0.0f, 0.0f, 0.2f};
+    CHECK(alloc_v2p_wrench_to_thrust(h, t) == ALLOC_V2_SCALED);
+    CHECK(fabsf(max_abs(t, 0, 8) - 1.0f) < 1e-6f);
+    wrench_of(t, a);
+    CHECK(fabs(a[0]) < 1e-5 && fabs(a[5]) < 1e-5);
+
+    /* Nothing saturated: identical to v2. */
+    float s[6] = {0.2f, 0.1f, 0.3f, 0.02f, 0.03f, 0.05f};
+    float t2[8];
+    CHECK(alloc_v2p_wrench_to_thrust(s, t) == 0);
+    alloc_v2_wrench_to_thrust(s, t2);
+    for (int i = 0; i < 8; i++) CHECK(fabsf(t[i] - t2[i]) < 1e-6f);
+}
+
 int main(void)
 {
     test_zero();
@@ -188,6 +259,8 @@ int main(void)
     test_deadzone_and_mapping();
     test_pwm_clamping();
     test_slew();
+    test_v2();
+    test_v2p();
 
     printf("%d/%d checks passed\n", g_total - g_failed, g_total);
     return g_failed ? 1 : 0;
