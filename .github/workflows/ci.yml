@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python dependencies
+        run: pip install -r python/requirements.txt
+      - name: Generated header is up to date
+        run: python python/model.py --check
+      - name: Build (gcc, -Werror)
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+      - name: C unit tests
+        run: ctest --test-dir build --output-on-failure
+      - name: pytest (C build required)
+        run: ALLOC_REQUIRE_C=1 python -m pytest -v
+      - name: C vs NumPy, 10,000 wrenches
+        run: python python/compare_c.py --out /tmp/c_vs_numpy.json
