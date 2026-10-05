@@ -66,6 +66,14 @@ def firmware_pinv() -> np.ndarray:
     return p
 
 
+def full_pinv_f32() -> np.ndarray:
+    """Full-precision B+ as float32, used by the v2 allocators (not flown).
+    SVD round-off below 1e-9 (T7's 1e-16 entries) is set to exactly 0."""
+    p = pinv()
+    p[np.abs(p) < 1e-9] = 0.0
+    return p.astype(np.float32)
+
+
 def block_pinv(p: np.ndarray | None = None) -> np.ndarray:
     """The part of B+ the firmware actually uses.
 
@@ -97,6 +105,12 @@ def _fmt(v: float) -> str:
     return f"{v:.{FIRMWARE_DECIMALS}f}"
 
 
+def _fmt32(v: float) -> str:
+    """Shortest text that round-trips a float32, always a valid C literal."""
+    t = f"{float(v):.9g}"
+    return t if any(c in t for c in ".e") else t + ".0"
+
+
 def source_hash() -> str:
     """SHA-256 of A as printed to 4 decimals, row-major."""
     text = "\n".join(",".join(_fmt(v) for v in row) for row in A)
@@ -111,6 +125,13 @@ def render_header() -> str:
         out = []
         for r, name in zip(m, names):
             vals = ", ".join(f"{_fmt(v):>7}f" for v in r)
+            out.append(f"    {{ {vals} }},   /* {name} */")
+        return "\n".join(out)
+
+    def rows32(m: np.ndarray, names) -> str:
+        out = []
+        for r, name in zip(m, names):
+            vals = ", ".join(f"{_fmt32(v):>15}f" for v in r)
             out.append(f"    {{ {vals} }},   /* {name} */")
         return "\n".join(out)
 
@@ -137,6 +158,12 @@ static const float ALLOC_A[6][8] = {{
 /* Pseudo-inverse B+ (8x6): T = B+ * U. Columns surge sway heave roll pitch yaw. */
 static const float ALLOC_B_PINV[8][6] = {{
 {rows(p, [f"T{i + 1}" for i in range(N_THR)])}
+}};
+
+/* Full-precision B+ (float32, 9 significant digits round-trip exactly).
+ * Used only by alloc_v2.c, which has NOT flown. */
+static const float ALLOC_B_PINV_FULL[8][6] = {{
+{rows32(full_pinv_f32(), [f"T{i + 1}" for i in range(N_THR)])}
 }};
 
 #endif /* ALLOC_MATRIX_H */

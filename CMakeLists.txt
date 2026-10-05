@@ -15,7 +15,7 @@ if(ALLOC_WERROR)
   list(APPEND ALLOC_WARNINGS -Werror)
 endif()
 
-add_library(alloc STATIC src/alloc.c)
+add_library(alloc STATIC src/alloc.c src/alloc_v2.c)
 target_include_directories(alloc PUBLIC include)
 # No fused multiply-add: keeps results bit-identical to the NumPy reference
 # and to the Cortex-M4 bench build, which uses the same flag.

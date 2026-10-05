@@ -95,3 +95,59 @@ def slew_step(current, target, dt: float) -> np.ndarray:
 
 def neutral() -> np.ndarray:
     return np.full(model.N_THR, PWM_NEUTRAL, dtype=np.int16)
+
+
+# ---------------------------------------------------------------------------
+# v2 allocators: NOT FLOWN. Mirrors src/alloc_v2.c.
+
+V2_SCALED, V2_SECONDARY = 0x08, 0x10
+B_FULL = model.full_pinv_f32()
+
+
+def _reject(W, T, flags):
+    bad = ~np.all(np.isfinite(W), axis=1)
+    T[bad] = 0
+    flags[bad] = REJECTED
+    return T, flags
+
+
+def v2_wrench_to_thrust(W, dtype=np.float32):
+    """Full B+, one uniform scale over all eight thrusters."""
+    W = np.atleast_2d(np.asarray(W, dtype=dtype))
+    B = B_FULL.astype(dtype)
+    with np.errstate(invalid="ignore", over="ignore"):
+        T = np.zeros((len(W), 8), dtype=dtype)
+        for k in range(6):
+            T = T + B[:, k][None, :] * W[:, k][:, None]
+        m = np.max(np.abs(T), axis=1)
+        sat = m > 1
+        T[sat] = T[sat] / m[sat, None]
+    flags = (sat * V2_SCALED).astype(np.uint8)
+    return _reject(W, T, flags)
+
+
+def v2p_wrench_to_thrust(W, dtype=np.float32):
+    """v2 with heave/roll/pitch allocated before surge/sway/yaw."""
+    W = np.atleast_2d(np.asarray(W, dtype=dtype))
+    B = B_FULL.astype(dtype)
+    one = dtype(1)
+
+    def col(k):
+        return B[:, k][None, :] * W[:, k][:, None]
+
+    with np.errstate(invalid="ignore", over="ignore", divide="ignore"):
+        Tp = (col(2) + col(3)) + col(4)
+        Ts = (col(0) + col(1)) + col(5)
+        fits = np.max(np.abs(Tp + Ts), axis=1) <= 1    # full command fits
+        m = np.max(np.abs(Tp), axis=1)
+        prim = m > 1
+        Tp[prim] = Tp[prim] / m[prim, None]
+        lim = np.where(Ts > 0, (one - Tp) / Ts,
+                       np.where(Ts < 0, (-one - Tp) / Ts, np.inf)).astype(dtype)
+        s = np.minimum(one, np.min(lim, axis=1)).astype(dtype)
+        s[fits] = 1
+        s[prim] = 0
+        T = np.clip(Tp + s[:, None] * Ts, -one, one).astype(dtype)
+
+    flags = np.where(prim, V2_SCALED, np.where(s < 1, V2_SECONDARY, 0)).astype(np.uint8)
+    return _reject(W, T, flags)
