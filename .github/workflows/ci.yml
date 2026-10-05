@@ -26,6 +26,8 @@ jobs:
         run: ALLOC_REQUIRE_C=1 python -m pytest -v
       - name: C vs NumPy, 10,000 wrenches
         run: python python/compare_c.py --out /tmp/c_vs_numpy.json
+      - name: README numbers match results/
+        run: python bench/render_readme.py --check
 
   nucleo-bench-build:
     runs-on: ubuntu-latest
