@@ -100,5 +100,82 @@
     "-0.0198",
     "-0.0198",
     "+0.0198"
-  ]
+  ],
+  "lever_arm_check": {
+    "rz_from_T5_m": -0.019802,
+    "columns": {
+      "T5": {
+        "direction": [
+          0.707,
+          -0.707
+        ],
+        "A_Mx_My": [
+          -0.014,
+          -0.014
+        ],
+        "predicted_Mx_My": [
+          -0.014,
+          -0.014
+        ],
+        "sign_mismatch": [
+          false,
+          false
+        ]
+      },
+      "T6": {
+        "direction": [
+          -0.707,
+          0.707
+        ],
+        "A_Mx_My": [
+          0.014,
+          -0.014
+        ],
+        "predicted_Mx_My": [
+          0.014,
+          0.014
+        ],
+        "sign_mismatch": [
+          false,
+          true
+        ]
+      },
+      "T7": {
+        "direction": [
+          0.707,
+          0.707
+        ],
+        "A_Mx_My": [
+          -0.014,
+          -0.014
+        ],
+        "predicted_Mx_My": [
+          0.014,
+          -0.014
+        ],
+        "sign_mismatch": [
+          true,
+          false
+        ]
+      },
+      "T8": {
+        "direction": [
+          0.707,
+          -0.707
+        ],
+        "A_Mx_My": [
+          0.014,
+          -0.014
+        ],
+        "predicted_Mx_My": [
+          -0.014,
+          -0.014
+        ],
+        "sign_mismatch": [
+          true,
+          false
+        ]
+      }
+    }
+  }
 }

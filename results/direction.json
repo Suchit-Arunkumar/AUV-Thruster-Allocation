@@ -1,51 +1,150 @@
 {
   "n_wrenches": 100000,
-  "n_saturated": 66387,
+  "n_saturated": 66705,
   "sampling": "direction uniform on the unit 6-sphere in authority-scaled space, magnitude uniform in [0, 3] x authority, seed 2",
-  "firmware_saturated_deg": {
-    "mean": 17.186,
-    "p95": 39.179,
-    "max": 67.6652
-  },
-  "naive_clip_saturated_deg": {
-    "mean": 18.0491,
-    "p95": 42.6224,
-    "max": 80.2863
-  },
-  "firmware_unsaturated_deg": {
-    "mean": 2.22154,
-    "p95": 4.43248,
-    "max": 6.18005
-  },
-  "saturated_firmware_better": 0.453131,
-  "saturated_firmware_worse": 0.512902,
-  "group_angle_saturated_deg": {
-    "vertical (T1-T4 on heave/roll/pitch)": {
-      "firmware": {
-        "mean": 2.4202e-07,
-        "p95": 1.20742e-06,
-        "max": 1.9091e-06
+  "saturated": {
+    "flown": {
+      "direction_deg": {
+        "mean": 17.1142,
+        "p95": 39.1212,
+        "max": 67.6652
       },
-      "naive_clip": {
-        "mean": 6.93755,
-        "p95": 18.0773,
-        "max": 31.6843
+      "magnitude_loss": {
+        "mean": 0.378249,
+        "p95": 0.657528,
+        "max": 0.863443
+      },
+      "primary_direction_deg": {
+        "mean": 3.64839,
+        "p95": 7.15365,
+        "max": 78.9129
+      },
+      "primary_magnitude_loss": {
+        "mean": 0.374099,
+        "p95": 0.695665,
+        "max": 0.861069
       }
     },
-    "horizontal (T5-T8 on surge/sway/yaw)": {
-      "firmware": {
-        "mean": 11.0378,
-        "p95": 48.426,
-        "max": 74.7965
+    "clip": {
+      "direction_deg": {
+        "mean": 17.9732,
+        "p95": 42.584,
+        "max": 80.2863
       },
-      "naive_clip": {
-        "mean": 13.983,
-        "p95": 53.4538,
-        "max": 85.6932
+      "magnitude_loss": {
+        "mean": 0.326718,
+        "p95": 0.62407,
+        "max": 0.943447
+      },
+      "primary_direction_deg": {
+        "mean": 8.36225,
+        "p95": 18.8558,
+        "max": 75.6441
+      },
+      "primary_magnitude_loss": {
+        "mean": 0.29867,
+        "p95": 0.613995,
+        "max": 0.80491
+      }
+    },
+    "v2": {
+      "direction_deg": {
+        "mean": 1.50674e-06,
+        "p95": 3.07832e-06,
+        "max": 4.18262e-06
+      },
+      "magnitude_loss": {
+        "mean": 0.451778,
+        "p95": 0.705203,
+        "max": 0.794926
+      },
+      "primary_direction_deg": {
+        "mean": 6.11311e-07,
+        "p95": 1.47878e-06,
+        "max": 5.46682e-06
+      },
+      "primary_magnitude_loss": {
+        "mean": 0.451778,
+        "p95": 0.705203,
+        "max": 0.794926
+      }
+    },
+    "v2p": {
+      "direction_deg": {
+        "mean": 36.9206,
+        "p95": 63.491,
+        "max": 77.419
+      },
+      "magnitude_loss": {
+        "mean": 0.643185,
+        "p95": 0.867715,
+        "max": 0.956053
+      },
+      "primary_direction_deg": {
+        "mean": 6.04424e-07,
+        "p95": 1.47878e-06,
+        "max": 4.00455e-06
+      },
+      "primary_magnitude_loss": {
+        "mean": 0.373328,
+        "p95": 0.693302,
+        "max": 0.794546
       }
     }
   },
-  "curve": {
+  "unsaturated_direction_deg": {
+    "flown": {
+      "mean": 2.22246,
+      "p95": 4.43574,
+      "max": 6.18005
+    },
+    "clip": {
+      "mean": 2.22246,
+      "p95": 4.43574,
+      "max": 6.18005
+    },
+    "v2": {
+      "mean": 1.55712e-06,
+      "p95": 3.07832e-06,
+      "max": 4.26887e-06
+    },
+    "v2p": {
+      "mean": 1.55628e-06,
+      "p95": 3.07832e-06,
+      "max": 4.26887e-06
+    }
+  },
+  "flown_vs_clip": {
+    "flown_better": 0.450971,
+    "flown_worse": 0.510456,
+    "group_angle_deg": {
+      "vertical (T1-T4 on heave/roll/pitch)": {
+        "flown": {
+          "mean": 2.41841e-07,
+          "p95": 1.20742e-06,
+          "max": 1.9091e-06
+        },
+        "clip": {
+          "mean": 6.90447,
+          "p95": 18.0599,
+          "max": 31.6843
+        }
+      },
+      "horizontal (T5-T8 on surge/sway/yaw)": {
+        "flown": {
+          "mean": 10.9852,
+          "p95": 48.3574,
+          "max": 74.7965
+        },
+        "clip": {
+          "mean": 13.9164,
+          "p95": 53.4164,
+          "max": 85.6932
+        }
+      }
+    }
+  },
+  "median_direction_vs_magnitude": {
     "r": [
       0.125,
       0.375,
@@ -60,7 +159,7 @@
       2.625,
       2.875
     ],
-    "fw_median": [
+    "flown": [
       2.08335,
       2.07367,
       2.07936,
@@ -74,21 +173,7 @@
       21.2244,
       22.1656
     ],
-    "fw_p95": [
-      4.53683,
-      4.61668,
-      4.60421,
-      8.07694,
-      21.4604,
-      28.7597,
-      34.3261,
-      37.5674,
-      41.0941,
-      42.7441,
-      43.1839,
-      44.1597
-    ],
-    "naive_median": [
+    "clip": [
       2.08335,
       2.07367,
       2.07984,
@@ -102,19 +187,33 @@
       22.8756,
       24.3574
     ],
-    "naive_p95": [
-      4.53683,
-      4.61668,
-      4.60421,
-      7.8824,
-      22.4759,
-      30.8641,
-      36.8454,
-      40.3607,
-      44.7002,
-      46.2031,
-      47.3377,
-      49.5605
+    "v2": [
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06
+    ],
+    "v2p": [
+      1.47878e-06,
+      1.47878e-06,
+      1.47878e-06,
+      2.25887e-06,
+      17.1619,
+      32.2172,
+      36.8757,
+      39.9811,
+      41.7081,
+      42.9959,
+      42.7633,
+      43.4592
     ]
   }
 }

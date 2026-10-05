@@ -1,19 +1,37 @@
 {
-  "n_unsaturated": 99318,
+  "n_unsaturated": 99255,
   "sampling": "each DOF uniform in +-0.4 x authority, seed 1",
-  "firmware_max_abs_error": 0.0288888,
-  "firmware_max_abs_error_per_axis": {
-    "Fx": 2.91288e-05,
-    "Fy": 4.90859e-05,
-    "Fz": 0.000130719,
-    "Mx": 0.0203734,
-    "My": 0.0288888,
-    "Mz": 6.12748e-06
+  "flown": {
+    "max_abs_error": 0.0286077,
+    "max_abs_error_per_axis": {
+      "Fx": 2.91288e-05,
+      "Fy": 4.90859e-05,
+      "Fz": 0.000130719,
+      "Mx": 0.0203734,
+      "My": 0.0286077,
+      "Mz": 6.12748e-06
+    },
+    "direction_error_deg": {
+      "mean": 2.25407,
+      "p95": 4.52071,
+      "max": 6.18949
+    }
   },
-  "full_pinv_max_abs_error": 0.000143935,
-  "firmware_direction_error_deg": {
-    "mean": 2.25412,
-    "p95": 4.52082,
-    "max": 6.18949
-  }
+  "v2": {
+    "max_abs_error": 4.39427e-08,
+    "max_abs_error_per_axis": {
+      "Fx": 3.8154e-08,
+      "Fy": 3.83675e-08,
+      "Fz": 4.39427e-08,
+      "Mx": 5.51332e-09,
+      "My": 4.88565e-09,
+      "Mz": 9.71744e-09
+    },
+    "direction_error_deg": {
+      "mean": 1.5323e-06,
+      "p95": 3.07832e-06,
+      "max": 4.26887e-06
+    }
+  },
+  "full_4dp_pinv_max_abs_error": 0.000143935
 }

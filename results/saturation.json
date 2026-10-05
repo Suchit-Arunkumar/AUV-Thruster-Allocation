@@ -1,7 +1,7 @@
 {
   "n_per_level": 20000,
   "sampling": "each DOF independently uniform in +-level x authority, seed 3",
-  "criterion": "achieved DOF differs from the unsaturated firmware output by more than 1% of that DOF's authority",
+  "criterion": "achieved DOF differs from the unsaturated flown output by more than 1% of that DOF's authority",
   "levels": [
     0.1,
     0.2,
@@ -136,6 +136,18 @@
       0.1947,
       0.2649,
       0.322
+    ],
+    "v2_scaled": [
+      0.0,
+      0.0,
+      0.0,
+      0.00615,
+      0.09825,
+      0.299,
+      0.5046,
+      0.66825,
+      0.7907,
+      0.8606
     ]
   }
 }
