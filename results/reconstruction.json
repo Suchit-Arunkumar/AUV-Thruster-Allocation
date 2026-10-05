@@ -1,0 +1,19 @@
+{
+  "n_unsaturated": 99318,
+  "sampling": "each DOF uniform in +-0.4 x authority, seed 1",
+  "firmware_max_abs_error": 0.0288888,
+  "firmware_max_abs_error_per_axis": {
+    "Fx": 2.91288e-05,
+    "Fy": 4.90859e-05,
+    "Fz": 0.000130719,
+    "Mx": 0.0203734,
+    "My": 0.0288888,
+    "Mz": 6.12748e-06
+  },
+  "full_pinv_max_abs_error": 0.000143935,
+  "firmware_direction_error_deg": {
+    "mean": 2.25412,
+    "p95": 4.52082,
+    "max": 6.18949
+  }
+}
