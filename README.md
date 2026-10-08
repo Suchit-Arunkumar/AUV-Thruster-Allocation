@@ -61,8 +61,8 @@ deviations, each reachable only with inputs the firmware never guarded:
   at the vehicle's dt = 0.02 s; dt ≤ 0 or NaN holds the outputs.
 
 `src/alloc_v2.c` is new work, verified against the NumPy reference and in
-simulation, and **has not flown or run on a board**. The NUCLEO-F446RE bench
-firmware that would time it builds in CI but has not been run yet.
+simulation, and **has not flown**. v2 and v2p have run on a bare NUCLEO-F446RE
+(the cycle bench), with outputs matching the NumPy reference bit for bit.
 
 ---
 
@@ -327,7 +327,18 @@ Heave, roll and pitch share the four vertical thrusters and saturate first.
 
 ### Cycle cost on a Cortex-M4F
 
-*Not yet measured.* The bench firmware is in `firmware/nucleo_bench/`; `results/nucleo_bench.json` is written only from the board's own output.
+NUCLEO-F446RE, 180 MHz, arm-none-eabi-gcc `-O2 -ffp-contract=off`, 1000 seeded wrenches (721 saturated in the flown allocator), run 11 (warm flash cache), DWT CYCCNT, read overhead subtracted.
+
+| Stage | Cycles min / mean / max | µs mean / max |
+|---|---|---|
+| Flown: wrench → thrust | 1434 / 1650.7 / 1787 | 9.17 / 9.928 |
+| thrust → PWM (8 ESCs) | 347 / 398.9 / 411 | 2.216 / 2.283 |
+| slew step | 229 / 245.4 / 253 | 1.363 / 1.406 |
+| **Flown pipeline total** | 2049 / 2295.0 / 2441 | 12.75 / 13.561 |
+| v2: wrench → thrust (not flown) | 808 / 941.6 / 993 | 5.231 / 5.517 |
+| v2p: wrench → thrust (not flown) | 890 / 948.3 / 1207 | 5.268 / 6.706 |
+
+On-target output vs NumPy reference (FNV-1a over every thrust, PWM and flag byte): flown match, v2 match, v2p match.
 
 ---
 
@@ -344,7 +355,7 @@ Heave, roll and pitch share the four vertical thrusters and saturate first.
 | v2 (not flown), saturated direction error | 4 × 10⁻⁶° max |
 | v2 extra magnitude loss vs flown | 7.4 percentage points (mean 45.2% vs 37.8%) |
 | C vs NumPy | bit-identical, 10,000 wrenches (CI) |
-| Flown pipeline on STM32F446 @ 180 MHz | pending bench run |
+| Flown pipeline on STM32F446 @ 180 MHz | 2295.0 cycles mean, 2441 max (12.75 / 13.561 µs) |
 
 ---
 
@@ -353,9 +364,9 @@ Heave, roll and pitch share the four vertical thrusters and saturate first.
 - **Thrust calibration.** Per-ESC thrust vs PWM was not measured in a tank;
   everything assumes linear, symmetric (forward = reverse) thrust and no
   thruster–thruster interaction.
-- **v2 and v2p have not flown or run on a board.** They are verified against
-  the NumPy reference and in the analysis. The NUCLEO-F446RE cycle bench builds
-  in CI but has not been run.
+- **v2 and v2p have not flown.** They have run on a bare NUCLEO-F446RE (the
+  cycle bench), with outputs matching the NumPy reference bit for bit, but not
+  on the vehicle.
 - **Saturation rates** come from a uniform sweep, not from logged commands.
 - **No closed-loop result.** How the direction errors measured here affect
   tracking depends on the upstream controller, which is out of scope.

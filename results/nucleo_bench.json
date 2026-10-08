@@ -1,0 +1,73 @@
+{
+  "run": 11,
+  "sysclk_hz": 180000000,
+  "n_calls": 1000,
+  "seed": 2026,
+  "saturated_calls": 721,
+  "v2_scaled_calls": 726,
+  "v2p_scaled_calls": 732,
+  "hash": "0x8ffa1f75",
+  "v2_hash": "0x9b3f2f6b",
+  "v2p_hash": "0x083b08b4",
+  "stages": {
+    "overhead": {
+      "cycles_min": 1,
+      "cycles_mean": 1.0,
+      "cycles_max": 1,
+      "us_mean": 0.006,
+      "us_max": 0.006
+    },
+    "wrench_to_thrust": {
+      "cycles_min": 1434,
+      "cycles_mean": 1650.7,
+      "cycles_max": 1787,
+      "us_mean": 9.17,
+      "us_max": 9.928
+    },
+    "thrust_to_pwm": {
+      "cycles_min": 347,
+      "cycles_mean": 398.9,
+      "cycles_max": 411,
+      "us_mean": 2.216,
+      "us_max": 2.283
+    },
+    "slew_step": {
+      "cycles_min": 229,
+      "cycles_mean": 245.4,
+      "cycles_max": 253,
+      "us_mean": 1.363,
+      "us_max": 1.406
+    },
+    "total": {
+      "cycles_min": 2049,
+      "cycles_mean": 2295.0,
+      "cycles_max": 2441,
+      "us_mean": 12.75,
+      "us_max": 13.561
+    },
+    "v2_wrench_to_thrust": {
+      "cycles_min": 808,
+      "cycles_mean": 941.6,
+      "cycles_max": 993,
+      "us_mean": 5.231,
+      "us_max": 5.517
+    },
+    "v2p_wrench_to_thrust": {
+      "cycles_min": 890,
+      "cycles_mean": 948.3,
+      "cycles_max": 1207,
+      "us_mean": 5.268,
+      "us_max": 6.706
+    }
+  },
+  "expected": {
+    "hash": "0x8ffa1f75",
+    "v2_hash": "0x9b3f2f6b",
+    "v2p_hash": "0x083b08b4"
+  },
+  "output_matches_reference": {
+    "hash": true,
+    "v2_hash": true,
+    "v2p_hash": true
+  }
+}

@@ -60,8 +60,8 @@ deviations, each reachable only with inputs the firmware never guarded:
   at the vehicle's dt = 0.02 s; dt ≤ 0 or NaN holds the outputs.
 
 `src/alloc_v2.c` is new work, verified against the NumPy reference and in
-simulation, and **has not flown or run on a board**. The NUCLEO-F446RE bench
-firmware that would time it builds in CI but has not been run yet.
+simulation, and **has not flown**. v2 and v2p have run on a bare NUCLEO-F446RE
+(the cycle bench), with outputs matching the NumPy reference bit for bit.
 
 ---
 
@@ -326,9 +326,9 @@ Heave, roll and pitch share the four vertical thrusters and saturate first.
 - **Thrust calibration.** Per-ESC thrust vs PWM was not measured in a tank;
   everything assumes linear, symmetric (forward = reverse) thrust and no
   thruster–thruster interaction.
-- **v2 and v2p have not flown or run on a board.** They are verified against
-  the NumPy reference and in the analysis. The NUCLEO-F446RE cycle bench builds
-  in CI but has not been run.
+- **v2 and v2p have not flown.** They have run on a bare NUCLEO-F446RE (the
+  cycle bench), with outputs matching the NumPy reference bit for bit, but not
+  on the vehicle.
 - **Saturation rates** come from a uniform sweep, not from logged commands.
 - **No closed-loop result.** How the direction errors measured here affect
   tracking depends on the upstream controller, which is out of scope.
