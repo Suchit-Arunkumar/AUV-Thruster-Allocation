@@ -29,10 +29,9 @@ direction error goes to 4 × 10⁻⁶° with or without saturation, at the cost 
 3. [Pipeline](#pipeline)
 4. [Results](#results)
 5. [Key figures](#key-figures)
-6. [Open questions](#open-questions)
-7. [Not verified](#not-verified)
-8. [Build and test](#build-and-test)
-9. [Repository layout](#repository-layout)
+6. [Not verified](#not-verified)
+7. [Build and test](#build-and-test)
+8. [Repository layout](#repository-layout)
 
 ---
 
@@ -346,31 +345,6 @@ Heave, roll and pitch share the four vertical thrusters and saturate first.
 | v2 extra magnitude loss vs flown | 7.4 percentage points (mean 45.2% vs 37.8%) |
 | C vs NumPy | bit-identical, 10,000 wrenches (CI) |
 | Flown pipeline on STM32F446 @ 180 MHz | pending bench run |
-
----
-
-## Open questions
-
-**Origin of the ±0.014 roll/pitch entries for T5–T8.** A moment produced by a
-thrust along **d** at a lever arm is **r** × **d**, which is always orthogonal
-to **d**. With **d** in the horizontal plane that forces
-M<sub>x</sub> = −r<sub>z</sub> d<sub>y</sub> and M<sub>y</sub> = r<sub>z</sub> d<sub>x</sub>.
-T5's entries are consistent with a vertical offset r<sub>z</sub> = -0.0198 m (about
-2 cm). T6–T8 are not, for that or any other r<sub>z</sub>: one entry each has the
-opposite sign (bold), and M·d ≠ 0.
-
-| Thruster | d (x, y) | A: (Mx, My) | r×d with T5's r<sub>z</sub>: (Mx, My) | M·d |
-|---|---|---|---|---|
-| T5 | (+0.707, -0.707) | (-0.014, -0.014) | (-0.014, -0.014) | +0.0000 |
-| T6 | (-0.707, +0.707) | (+0.014, **-0.014**) | (+0.014, +0.014) | -0.0198 |
-| T7 | (+0.707, +0.707) | (**-0.014**, -0.014) | (+0.014, -0.014) | -0.0198 |
-| T8 | (+0.707, -0.707) | (**+0.014**, -0.014) | (-0.014, -0.014) | +0.0198 |
-
-This pattern suggests sign errors in hand-entered values. Propeller reaction
-torque would add a component along **d**, but it would also appear on T5. The
-entries set the size of the flown allocator's block-truncation coupling, so
-they matter for the unsaturated error above. `A` is used as-is here; it has not
-been changed.
 
 ---
 
