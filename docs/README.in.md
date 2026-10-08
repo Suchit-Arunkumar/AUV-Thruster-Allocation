@@ -1,6 +1,6 @@
 # AUV Thruster Allocation
 
-[![ci](https://github.com/Suchit-Arunkumar/auv-thruster-allocation/actions/workflows/ci.yml/badge.svg)](https://github.com/Suchit-Arunkumar/auv-thruster-allocation/actions/workflows/ci.yml)
+[![ci](https://github.com/Suchit-Arunkumar/AUV-Thruster-Allocation/actions/workflows/ci.yml/badge.svg)](https://github.com/Suchit-Arunkumar/AUV-Thruster-Allocation/actions/workflows/ci.yml)
 
 Thruster allocation (motor mixing) for Team Tiburon's 8-thruster AUV: the 6×8
 allocation matrix, its pseudo-inverse, per-group saturation renormalisation,
@@ -293,7 +293,7 @@ Heave, roll and pitch share the four vertical thrusters and saturate first.
 - {{@pytest_count}} pytest tests plus the C unit runner (`tests/c/test_alloc.c`: zero,
   single-axis, extreme saturation, NaN/±inf on every input, deadzone
   boundaries, truncation, PWM clamping, slew steps and holds, failsafe, v2 and
-  v2p). All run in [CI](https://github.com/Suchit-Arunkumar/auv-thruster-allocation/actions/workflows/ci.yml)
+  v2p). All run in [CI](https://github.com/Suchit-Arunkumar/AUV-Thruster-Allocation/actions/workflows/ci.yml)
   on ubuntu-latest with gcc and `-Werror`; the C build and the C-vs-NumPy tests
   are required there, not skipped.
 - v2 direction error is asserted ≤ 10⁻⁴° on every saturated command, on both
