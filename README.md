@@ -91,6 +91,8 @@ $$
 \mathbf r\times\mathbf d=\begin{bmatrix}-r_z d_y\\ r_z d_x\\ r_x d_y-r_y d_x\end{bmatrix}.
 $$
 
+The roll and pitch coupling terms of the horizontal thrusters (the +/-0.014 entries of B for T5-T8) have not been verified against the CAD.
+
 `A` has rank 6, singular values
 2.000, 1.743, 1.054, 0.287, 0.257, 0.249
 and condition number 8.05. Full row rank means every wrench is
