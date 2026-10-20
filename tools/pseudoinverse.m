@@ -10,6 +10,8 @@ B = [     0         0         0         0    0.7070   -0.7070    0.7070    0.707
 
 % ---- Step 2: SVD decomposition ----
 [U, S, V] = svd(B);
+disp('rank(B):'); disp(rank(B));
+disp('Singular values of B:'); disp(svd(B));
 
 % ---- Step 3: Sigma+ ----
 [m, n] = size(B);      % m=6, n=8

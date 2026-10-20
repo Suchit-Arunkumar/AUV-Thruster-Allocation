@@ -29,20 +29,12 @@ SAUVC 2026 and is ported here to portable C (`src/alloc.c`).
 | Out of scope | The upstream 6-DOF controller (co-developed) that produces the wrench |
 | Thrust units | Normalised to full ESC command, \|T<sub>i</sub>\| ≤ 1. Thrust per ESC has not been calibrated in a tank, so nothing here is in newtons |
 
-`A`, `B⁺`, the group logic and all PWM constants are identical in the team's
-tuning sketch, the vehicle firmware and both STM32 ports. The one port
-difference is in TIBURON-AUV-FreeRTOS, which applies the slew limit only while
-recovering from boot or failsafe; the vehicle firmware and the bare-metal port
-apply it on every armed tick, and so does `src/alloc.c`.
-
 `src/alloc.c` keeps the firmware's group logic line for line. Deliberate
 deviations, each reachable only with inputs the firmware never guarded:
 
 - a non-finite wrench element is rejected (zero thrust, `ALLOC_REJECTED`); the
   firmware would pass NaN through an undefined float→int conversion to the ESCs;
-- a non-finite thrust maps to neutral PWM;
-- the slew step is `round(2500 µs/s · dt)` instead of a fixed 50 µs, identical
-  at the vehicle's dt = 0.02 s; dt ≤ 0 or NaN holds the outputs.
+- a non-finite thrust maps to neutral PWM.
 
 ---
 
@@ -109,6 +101,10 @@ $$
 Direction is kept and only magnitude is lost, whereas clipping each thruster on
 its own changes the ratios between thrusters and therefore the direction.
 
+In the flown allocator this holds exactly for the vertical group (T1–T4). On
+T5–T8, translation and yaw are each renormalised, then summed and clipped per
+thruster, so direction can shift when the sum saturates.
+
 ### What the flown allocator computes
 
 The firmware forms three groups, each with its own slice of B⁺:
@@ -137,7 +133,7 @@ Per 50 Hz tick, in `src/alloc.c`:
 |---|---|---|
 | 1 | `alloc_wrench_to_thrust` | wrench (surge, sway, heave, roll, pitch, yaw) → thrust T1–T8 in [−1, 1]; group renormalisation, sum, clip; returns saturation flags |
 | 2 | `alloc_thrust_to_pwm` | polarity flip (T1 is mounted reversed), clamp, deadzone \|u\| < 0.02 → neutral, `1500 + (int)(u·400)` µs, truncated toward zero |
-| 3 | `alloc_slew_step` | each output moves at most 50 µs per 20 ms tick (2500 µs/s), then clamp to 1100–1900 µs |
+| 3 | `alloc_slew_step` | each output moves at most 50 µs per call (one 20 ms tick), then clamp to 1100–1900 µs |
 | — | `alloc_neutral` | failsafe: every output to 1500 µs in the same tick, no ramp |
 
 | Constant | Value |

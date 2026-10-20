@@ -1,6 +1,6 @@
 /*
  * alloc.c - thruster allocation, ported from the vehicle firmware
- * (Pico_Main.ino SECTION 22-23). The group logic is kept line-for-line so it
+ * (Pico_Main.ino). The group logic is kept line-for-line so it
  * can be diffed against the original; see alloc.h for the deviations.
  */
 #include "alloc.h"
@@ -14,10 +14,6 @@ static const uint8_t REVERSE_THRUST[ALLOC_N_THR] = {
     1, 0, 0, 0,     /* T1 T2 T3 T4 */
     0, 0, 0, 0      /* T5 T6 T7 T8 */
 };
-
-/* Largest step the slew limiter may take: the whole PWM range. Bounds the
- * float->int conversion for very large dt. */
-#define SLEW_STEP_MAX (ALLOC_PWM_MAX - ALLOC_PWM_MIN)
 
 uint8_t alloc_wrench_to_thrust(const float U[ALLOC_N_DOF],
                                float T_out[ALLOC_N_THR])
@@ -96,16 +92,9 @@ void alloc_thrust_to_pwm(const float thrust[ALLOC_N_THR],
         pwm_target[i] = (int16_t)thrust_to_pwm(thrust[i], i);
 }
 
-void alloc_slew_step(alloc_slew_t *s, const int16_t pwm_target[ALLOC_N_THR],
-                     float dt)
+void alloc_slew_step(alloc_slew_t *s, const int16_t pwm_target[ALLOC_N_THR])
 {
-    /* Firmware: fixed PWM_RAMP_STEP = 50 us per 20 ms tick. Here the step
-     * scales with dt; dt <= 0 and NaN fail the comparison and hold. */
-    int step = 0;
-    if (dt > 0.0f) {
-        float f = ALLOC_SLEW_US_PER_S * dt + 0.5f;
-        step = (f >= (float)SLEW_STEP_MAX) ? SLEW_STEP_MAX : (int)f;
-    }
+    const int step = ALLOC_SLEW_STEP_US;
 
     for (int i = 0; i < ALLOC_N_THR; i++) {
         int cur   = s->pwm_us[i];
