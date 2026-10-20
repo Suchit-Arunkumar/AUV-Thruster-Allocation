@@ -209,6 +209,7 @@ never touches pins.
 source of truth, and carries the SHA-256 of that matrix. It holds B⁺ rounded to
 the 4 decimals the firmware stores (used by the flown allocator) and at full
 float32 precision (used by v2).
+`B_pinv` in `include/alloc_matrix.h` was derived with `tools/pseudoinverse.m`.
 
 ---
 
